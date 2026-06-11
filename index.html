@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ระบบสั่งจองเสื้อ — กรมควบคุมโรค</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary:      #0284c7;
+      --primary-dk:   #0369a1;
+      --primary-lt:   #e0f2fe;
+      --accent:       #0ea5e9;
+      --bg-main:      #f8fafc;
+      --surface:      #ffffff;
+      --text-dark:    #0f172a;
+      --text-body:    #334155;
+      --text-muted:   #64748b;
+      --border:       #e2e8f0;
+      --border-hover: #cbd5e1;
+      --success:      #10b981;
+      --danger:       #ef4444;
+
+      --shadow-sm:    0 1px 3px rgba(15, 23, 42, 0.05);
+      --shadow-md:    0 4px 12px rgba(15, 23, 42, 0.05);
+      --shadow-lg:    0 12px 24px rgba(15, 23, 42, 0.08);
+      --radius-sm:    6px;
+      --radius:       12px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: var(--bg-main);
+      color: var(--text-body);
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      font-size: 15px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── HEADER ─── */
+    .gov-header {
+      background: var(--text-dark);
+      padding: 16px 5%;
+      display: flex; align-items: center; gap: 20px;
+    }
+    .gov-header-text { flex: 1; }
+    .gov-ministry { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 2px; font-weight: 400; }
+    .gov-dept { font-size: 16px; font-weight: 600; color: #ffffff; letter-spacing: 0.5px; }
+    .gov-badge {
+      font-size: 11px; font-weight: 600; letter-spacing: 1px;
+      color: var(--primary-lt); padding: 6px 12px;
+      background: rgba(2, 132, 199, 0.2); border-radius: 20px;
+    }
+
+    /* ─── NAV ─── */
+    nav {
+      position: sticky; top: 0; z-index: 200;
+      background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(8px);
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0 5%; height: 64px;
+      border-bottom: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+    }
+    .logo {
+      font-size: 15px; font-weight: 600; color: var(--primary-dk);
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+    }
+    .nav-links { display: flex; height: 100%; gap: 8px; align-items: center; }
+    .nav-links button {
+      background: none; border: none;
+      font-family: 'Sarabun', sans-serif;
+      font-size: 14px; font-weight: 500;
+      color: var(--text-muted); cursor: pointer;
+      padding: 8px 16px; border-radius: var(--radius-sm); transition: all 0.2s;
+    }
+    .nav-links button:hover { color: var(--primary); background: var(--primary-lt); }
+    .nav-links button.active { color: var(--primary-dk); font-weight: 600; background: var(--primary-lt); }
+
+    /* ─── PAGES ─── */
+    .page { display: none; flex: 1; animation: fadeIn 0.4s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ══════════════ HOME ══════════════ */
+    .home-hero {
+      display: grid; grid-template-columns: 1fr 1fr;
+      background: var(--surface);
+      margin: 24px 5%; border-radius: var(--radius);
+      box-shadow: var(--shadow-md); overflow: hidden;
+    }
+    .hero-left {
+      padding: 60px;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .hero-eyebrow {
+      font-size: 13px; font-weight: 600;
+      color: var(--primary); letter-spacing: 1px; margin-bottom: 16px;
+      display: inline-block; padding: 4px 12px; background: var(--primary-lt); border-radius: 20px; width: fit-content;
+    }
+    .hero-title { font-size: clamp(28px, 3vw, 40px); font-weight: 700; line-height: 1.3; color: var(--text-dark); margin-bottom: 20px; }
+    .hero-title strong { color: var(--primary); }
+    .hero-sub { font-size: 16px; color: var(--text-body); line-height: 1.6; margin-bottom: 32px; max-width: 90%; }
+    .hero-cta { display: flex; gap: 16px; align-items: center; }
+
+    .btn-primary {
+      font-family: 'Sarabun', sans-serif; font-size: 15px; font-weight: 600;
+      padding: 12px 28px; background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm); cursor: pointer;
+      transition: all 0.2s; box-shadow: 0 4px 6px rgba(2, 132, 199, 0.2);
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-primary:hover { background: var(--primary-dk); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(2, 132, 199, 0.3); }
+
+    .btn-outline {
+      font-family: 'Sarabun', sans-serif; font-size: 15px; font-weight: 600;
+      padding: 12px 28px; background: transparent; color: var(--text-dark);
+      border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;
+    }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-lt); }
+
+    .hero-right {
+      background: var(--bg-main);
+      display: grid;
+      place-items: center;
+      padding: 0;
+    }
+    .hero-slide {
+      grid-area: 1 / 1;
+      width: 100%; height: auto;
+      opacity: 0; transition: opacity 0.8s ease-in-out;
+    }
+    .hero-slide.active { opacity: 1; z-index: 1; }
+
+    .notice-bar {
+      background: #eff6ff; border: 1px solid #bfdbfe;
+      margin: 32px 5%; border-radius: var(--radius-sm);
+      padding: 16px 24px; font-size: 15px; color: #1e3a8a;
+      display: flex; align-items: center; justify-content: center; gap: 12px; text-align: center;
+    }
+
+    .gallery-section { padding: 60px 5%; }
+    .section-head { margin-bottom: 40px; text-align: center; }
+    .section-title { font-size: 28px; font-weight: 700; color: var(--text-dark); }
+    .section-desc { font-size: 15px; color: var(--text-muted); margin-top: 8px; }
+
+    .gallery-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
+    .gallery-card {
+      background: var(--surface); border-radius: var(--radius); overflow: hidden;
+      cursor: pointer; transition: all 0.3s ease;
+      box-shadow: var(--shadow-sm); border: 1px solid var(--border);
+    }
+    .gallery-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); border-color: var(--primary-lt); }
+    .gallery-img-wrap { aspect-ratio: 1/1; background: var(--bg-main); display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .gallery-card-body { padding: 16px; }
+    .gallery-card-label { font-size: 12px; font-weight: 600; color: var(--primary); margin-bottom: 4px; }
+    .gallery-card-title { font-size: 16px; font-weight: 600; color: var(--text-dark); }
+
+    /* ══════════════ STEP BAR ══════════════ */
+    .step-bar-wrap { padding: 32px 5% 0; background: var(--bg-main); }
+    .step-bar { display: flex; justify-content: center; gap: 40px; max-width: 600px; margin: 0 auto; }
+    .step-item { display: flex; flex-direction: column; align-items: center; gap: 8px; position: relative; flex: 1; text-align: center; }
+    .step-item::after {
+      content: ''; position: absolute; top: 16px; left: calc(50% + 20px); width: calc(100% - 40px); height: 2px; background: var(--border); z-index: 1;
+    }
+    .step-item:last-child::after { display: none; }
+    .step-item.done::after, .step-item.current::after { background: var(--primary); }
+    .step-num-badge {
+      width: 32px; height: 32px; border-radius: 50%; background: var(--surface); border: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: var(--text-muted); z-index: 2; position: relative; transition: all 0.3s;
+    }
+    .step-item.done .step-num-badge { background: var(--primary); border-color: var(--primary); color: #fff; }
+    .step-item.current .step-num-badge { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 0 4px var(--primary-lt); }
+    .step-label { font-size: 14px; font-weight: 500; color: var(--text-muted); }
+    .step-item.current .step-label { color: var(--primary); font-weight: 600; }
+    .step-item.done .step-label { color: var(--text-dark); }
+
+    /* ══════════════ FORMS ══════════════ */
+    .form-page-wrap { padding: 40px 5% 80px; display: flex; justify-content: center; }
+    .form-shell {
+      background: var(--surface); width: 100%; max-width: 640px;
+      padding: 48px; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-md);
+    }
+    .form-shell-narrow { max-width: 480px; }
+    .form-head { margin-bottom: 32px; text-align: center; }
+    .form-head h2 { font-size: 24px; font-weight: 700; color: var(--text-dark); margin-bottom: 8px; }
+    .form-head p { font-size: 14px; color: var(--text-muted); }
+
+    .field { margin-bottom: 20px; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .field label { display: block; font-size: 14px; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; }
+    .field label span.req { color: var(--danger); margin-left: 2px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 12px 16px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-family: 'Sarabun', sans-serif; font-size: 15px; color: var(--text-dark);
+      border-radius: var(--radius-sm); outline: none; transition: all 0.2s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-lt);
+    }
+    .field textarea { resize: vertical; min-height: 100px; }
+
+    .file-input-wrap {
+      border: 2px dashed var(--border-hover); background: var(--bg-main);
+      padding: 32px; text-align: center; cursor: pointer; border-radius: var(--radius-sm); transition: all 0.2s;
+    }
+    .file-input-wrap:hover { border-color: var(--primary); background: var(--primary-lt); }
+    .file-input-wrap .file-text { font-size: 14px; color: var(--text-body); }
+
+    .form-divider {
+      display: flex; align-items: center; gap: 16px; margin: 24px 0; color: var(--text-muted); font-size: 14px;
+    }
+    .form-divider::before, .form-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .btn-link {
+      background: none; border: none; cursor: pointer; font-family: 'Sarabun', sans-serif; font-size: 14px;
+      color: var(--primary); font-weight: 500; transition: color 0.2s; text-decoration: underline;
+    }
+    .btn-link:hover { color: var(--primary-dk); }
+
+    /* ══════════════ ORDER PAGE ══════════════ */
+    .order-page-wrap {
+      display: grid; grid-template-columns: 1.3fr 1fr;
+      gap: 40px; padding: 40px 5% 80px; align-items: start;
+    }
+    .order-images {
+      position: sticky; top: 88px; background: var(--surface); border-radius: var(--radius);
+      border: 1px solid var(--border); box-shadow: var(--shadow-sm); overflow: hidden;
+    }
+    .order-main-img-wrap {
+      aspect-ratio: 14/9; display: flex; align-items: center; justify-content: center;
+      position: relative; background: var(--bg-main);
+    }
+    .order-thumb-strip { display: flex; border-top: 1px solid var(--border); overflow-x: auto; padding: 12px; gap: 8px; background: var(--surface); }
+    .order-thumb-item {
+      width: 72px; height: 72px; flex-shrink: 0; cursor: pointer; border-radius: var(--radius-sm);
+      overflow: hidden; border: 2px solid transparent; transition: all 0.2s; background: var(--bg-main);
+    }
+    .order-thumb-item.active { border-color: var(--primary); }
+
+    /* ══════════════ ORDER FORM (CART SYSTEM) ══════════════ */
+    .order-form-col {
+      background: var(--surface); padding: 32px; border-radius: var(--radius);
+      border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+    }
+    .order-form-head { margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 14px; }
+    .order-form-head h2 { font-size: 20px; font-weight: 700; color: var(--text-dark); }
+    .order-form-head p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+    /* Add Panel */
+    .add-panel {
+      background: var(--bg-main); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 18px; margin-bottom: 20px;
+    }
+    .add-panel-title { font-size: 13px; font-weight: 600; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px; text-transform: uppercase; }
+    .ap-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    .ap-field label { display: block; font-size: 13px; font-weight: 600; color: var(--text-dark); margin-bottom: 5px; }
+    .ap-field label span.req { color: var(--danger); }
+    .ap-field input, .ap-field select {
+      width: 100%; padding: 10px 12px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-family: 'Sarabun', sans-serif; font-size: 14px; color: var(--text-dark);
+      border-radius: var(--radius-sm); outline: none; transition: all 0.2s;
+    }
+    .ap-field input:focus, .ap-field select:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-lt);
+    }
+
+    /* Qty control */
+    .qty-wrap { display: flex; border: 1px solid var(--border); width: fit-content; border-radius: var(--radius-sm); overflow: hidden; }
+    .qty-btn { width: 38px; height: 38px; background: var(--bg-main); border: none; font-size: 18px; cursor: pointer; color: var(--text-dark); transition: background 0.2s; }
+    .qty-btn:hover { background: var(--border-hover); }
+    .qty-input { width: 56px; text-align: center; border: none; border-left: 1px solid var(--border); border-right: 1px solid var(--border); font-family: 'Sarabun'; font-size: 15px; font-weight: 600; outline: none; color: var(--text-dark); background: var(--surface); }
+
+    .btn-add-item {
+      width: 100%; padding: 11px; background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm); cursor: pointer;
+      font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 600;
+      transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 12px;
+    }
+    .btn-add-item:hover { background: var(--primary-dk); }
+    .btn-add-item:active { transform: scale(0.98); }
+
+    /* Cart */
+    .cart-box { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); overflow: hidden; margin-bottom: 16px; }
+    .cart-header { padding: 12px 16px; background: var(--bg-main); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+    .cart-title { font-size: 14px; font-weight: 600; color: var(--text-dark); }
+    .cart-badge { background: var(--primary-lt); color: var(--primary-dk); font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+    .cart-empty { padding: 28px; text-align: center; color: var(--text-muted); font-size: 13px; }
+
+    .cart-item {
+      display: grid; grid-template-columns: 1fr auto auto; align-items: center;
+      gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border);
+    }
+    .cart-item:last-child { border-bottom: none; }
+    .ci-name { font-size: 13px; font-weight: 600; color: var(--text-dark); }
+    .ci-detail { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .ci-price { font-size: 14px; font-weight: 700; color: var(--primary); white-space: nowrap; }
+    .ci-del { background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 15px; padding: 4px 6px; border-radius: 4px; transition: all 0.15s; line-height: 1; }
+    .ci-del:hover { color: var(--danger); background: #fef2f2; }
+
+    /* Summary */
+    .cart-summary {
+      background: var(--bg-main); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 16px; margin-bottom: 16px;
+    }
+    .summary-row { display: flex; justify-content: space-between; font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+    .summary-total { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px; }
+    .total-label { font-size: 15px; font-weight: 600; color: var(--text-dark); }
+    .total-amount { font-size: 28px; font-weight: 700; color: var(--primary); }
+    .total-amount span { font-size: 14px; font-weight: 400; color: var(--text-muted); margin-left: 4px; }
+
+    /* Payment */
+    .info-box {
+      background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 4px solid var(--success);
+      padding: 16px; font-size: 14px; color: var(--text-dark); border-radius: var(--radius-sm);
+      margin-bottom: 16px; line-height: 1.6;
+    }
+
+    /* Action buttons */
+    .order-action-row { display: flex; gap: 10px; margin-top: 4px; }
+    .btn-clear-cart {
+      flex: 1; padding: 11px; background: var(--surface); color: var(--text-body);
+      border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer;
+      font-family: 'Sarabun', sans-serif; font-size: 14px; font-weight: 500; transition: all 0.2s;
+    }
+    .btn-clear-cart:hover { border-color: var(--danger); color: var(--danger); }
+    .btn-confirm-order {
+      flex: 2; padding: 13px; background: var(--primary); color: #fff;
+      border: none; border-radius: var(--radius-sm); cursor: pointer;
+      font-family: 'Sarabun', sans-serif; font-size: 15px; font-weight: 600; transition: all 0.2s;
+    }
+    .btn-confirm-order:hover { background: var(--primary-dk); }
+
+    /* QR Lightbox */
+    .qr-lightbox {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      padding: 20px; opacity: 0; transition: opacity 0.3s ease;
+    }
+    .qr-lightbox.show { display: flex; opacity: 1; }
+    .qr-lightbox-content {
+      background: var(--surface); padding: 32px; border-radius: var(--radius);
+      max-width: 400px; width: 100%; box-shadow: var(--shadow-lg);
+      position: relative; display: flex; flex-direction: column; align-items: center;
+      transform: translateY(20px); transition: transform 0.3s ease;
+    }
+    .qr-lightbox.show .qr-lightbox-content { transform: translateY(0); }
+    .qr-lightbox-content img { width: 100%; height: auto; max-height: 50vh; object-fit: contain; border-radius: 8px; border: 1px solid var(--border); }
+    .qr-close-btn {
+      position: absolute; top: 12px; right: 12px;
+      background: var(--bg-main); border: none; width: 32px; height: 32px;
+      border-radius: 50%; cursor: pointer; font-size: 16px; font-weight: bold;
+      color: var(--text-muted); display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+    }
+    .qr-close-btn:hover { background: var(--border); color: var(--danger); }
+
+    /* Footer */
+    footer {
+      background: var(--surface); border-top: 1px solid var(--border);
+      padding: 32px 5%; display: flex; justify-content: space-between; align-items: center; margin-top: auto;
+    }
+    .footer-left .footer-logo { font-size: 16px; font-weight: 700; color: var(--text-dark); display: block; }
+    .footer-left .footer-sub { font-size: 13px; color: var(--text-muted); }
+    .footer-right { font-size: 13px; color: var(--text-muted); text-align: right; }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      background: var(--text-dark); color: #fff; padding: 14px 24px;
+      font-size: 15px; font-weight: 500; border-radius: var(--radius-sm);
+      box-shadow: var(--shadow-lg); border-left: 4px solid var(--success);
+      transform: translateY(150%); transition: transform 0.3s ease;
+    }
+    .toast.show { transform: translateY(0); }
+
+    /* Responsive */
+    @media (max-width: 960px) {
+      .home-hero { grid-template-columns: 1fr; }
+      .hero-right { height: 300px; }
+      .order-page-wrap { grid-template-columns: 1fr; }
+      .order-images { position: relative; top: 0; }
+    }
+    @media (max-width: 768px) {
+      .gov-header { flex-direction: column; text-align: center; padding: 16px; }
+      nav { height: auto; flex-direction: column; padding: 12px; gap: 12px; }
+      .hero-left, .form-shell, .order-form-col { padding: 24px; }
+      .field-row, .ap-row2 { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 16px; text-align: center; }
+      .footer-right { text-align: center; }
+      .step-bar { gap: 16px; }
+      .step-item::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="gov-header">
+  <img src="./Picture/logo.png" alt="โลโก้กรมควบคุมโรค" style="height: 75px; width: auto; object-fit: contain; flex-shrink: 0;" />
+  <div class="gov-header-text">
+    <p class="gov-ministry">กระทรวงสาธารณสุข · Ministry of Public Health</p>
+    <p class="gov-dept">กรมควบคุมโรค (Department of Disease Control)</p>
+  </div>
+  <div class="gov-badge">ระบบสั่งซื้อออนไลน์</div>
+</div>
+
+<nav>
+  <div class="logo" onclick="switchPage('home')">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.38 3.46L16 2a8 8 0 01-8 8H4a2 2 0 00-2 2v6a2 2 0 002 2h2v4h4v-4h4a2 2 0 002-2v-6a2 2 0 00-1.62-1.96z"></path></svg>
+    ระบบสั่งจองเสื้อ
+  </div>
+  <div class="nav-links">
+    <button id="nav-home"     onclick="switchPage('home')">หน้าหลัก</button>
+    <button id="nav-register" onclick="switchPage('register')">ลงทะเบียน</button>
+    <button id="nav-login"    onclick="switchPage('login')">เข้าสู่ระบบ</button>
+  </div>
+</nav>
+
+<div id="home" class="page active">
+  <div class="home-hero">
+    <div class="hero-left">
+      <span class="hero-eyebrow">รอบงบประมาณ 2568</span>
+      <h1 class="hero-title">ระบบสั่งจองเสื้อเครื่องแบบ<br><strong>บุคลากรกรมควบคุมโรค</strong></h1>
+      <p class="hero-sub">ดำเนินการสั่งจองเสื้อเครื่องแบบอย่างเป็นทางการ ผ่านระบบออนไลน์ที่ออกแบบมาเพื่อให้เจ้าหน้าที่ใช้งานได้ง่ายและตรวจสอบสถานะได้รวดเร็ว</p>
+      <div class="hero-cta">
+        <button class="btn-primary" onclick="switchPage('order')">สั่งจองเสื้อทันที</button>
+        <button class="btn-outline" onclick="switchPage('register')">ลงทะเบียนสมาชิก</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <img src="./Picture/slide1.jpg" class="hero-slide active" alt="โปรโมต 1" />
+      <img src="./Picture/slide2.jpg" class="hero-slide" alt="โปรโมต 2" />
+      <img src="./Picture/slide3.jpg" class="hero-slide" alt="โปรโมต 3" />
+      <img src="./Picture/slide4.jpg" class="hero-slide" alt="โปรโมต 4" />
+    </div>
+  </div>
+
+  <div class="notice-bar">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    <span>เปิดรับสั่งจอง: <strong>1 – ..... 2569</strong> | ราคา <strong>290-300 บาท</strong> / ตัว</span>
+  </div>
+
+  <div class="gallery-section">
+    <div class="section-head">
+      <h2 class="section-title">คอลเลกชันตัวอย่าง</h2>
+      <p class="section-desc">รายละเอียดและเนื้อผ้าของเสื้อเครื่องแบบรุ่นล่าสุด</p>
+    </div>
+    <div class="gallery-grid" id="gallery-grid-container">
+      <script>
+        const labels = ['เสื้อด้านหน้า', 'เสื้อด้านหลัง', 'รุ่นคลาสสิกสีกรมท่า', 'การปักด้านหลัง'];
+        const tags   = ['Front View', 'Back View', 'Material', 'Colorway'];
+        const images = ['./Picture/white1.jpg', './Picture/white2.jpg', './Picture/blue1.jpg', './Picture/compare.png'];
+        for (let i = 0; i < 4; i++) {
+          document.write(`
+            <div class="gallery-card">
+              <div class="gallery-img-wrap">
+                <img src="${images[i]}" alt="${labels[i]}" style="width:100%;height:100%;object-fit:cover;transition:transform 0.5s ease;" />
+              </div>
+              <div class="gallery-card-body">
+                <p class="gallery-card-label">${tags[i]}</p>
+                <p class="gallery-card-title">${labels[i]}</p>
+              </div>
+            </div>
+          `);
+        }
+      </script>
+    </div>
+  </div>
+</div>
+
+<div id="register" class="page">
+  <div class="step-bar-wrap">
+    <div class="step-bar">
+      <div class="step-item current"><div class="step-num-badge">1</div><span class="step-label">ลงทะเบียน</span></div>
+      <div class="step-item"><div class="step-num-badge">2</div><span class="step-label">เข้าสู่ระบบ</span></div>
+      <div class="step-item"><div class="step-num-badge">3</div><span class="step-label">สั่งจองสินค้า</span></div>
+    </div>
+  </div>
+  <div class="form-page-wrap">
+    <div class="form-shell">
+      <div class="form-head">
+        <h2>สร้างบัญชีผู้ใช้งาน</h2>
+        <p>กรุณาระบุข้อมูลตามความเป็นจริงเพื่อประโยชน์ในการจัดส่ง</p>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>ชื่อจริง <span class="req">*</span></label><input type="text" id="reg-firstname" placeholder="สมชาย" /></div>
+        <div class="field"><label>นามสกุล <span class="req">*</span></label><input type="text" id="reg-lastname" placeholder="ใจดี" /></div>
+      </div>
+      <div class="field">
+        <label>อีเมลติดต่อ <span class="req">*</span></label>
+        <input type="email" id="reg-email" placeholder="example@ddc.moph.go.th" />
+      </div>
+      <div class="field"><label>หน่วยงาน / กอง <span class="req">*</span></label><input type="text" id="reg-org" placeholder="สำนักระบาดวิทยา" /></div>
+      <div class="field">
+        <label>ที่อยู่จัดส่งโดยละเอียด <span class="req">*</span></label>
+        <textarea id="reg-address" placeholder="ระบุบ้านเลขที่ ถนน ตำบล อำเภอ จังหวัด รหัสไปรษณีย์"></textarea>
+      </div>
+      <button class="btn-primary" style="width:100%; padding:14px;" onclick="handleRegister()">ลงทะเบียน</button>
+      <div style="text-align:center; margin-top:20px;"><button class="btn-link" onclick="switchPage('login')">มีบัญชีอยู่แล้ว? เข้าสู่ระบบ</button></div>
+    </div>
+  </div>
+</div>
+
+<div id="login" class="page">
+  <div class="step-bar-wrap">
+    <div class="step-bar">
+      <div class="step-item done"><div class="step-num-badge">✓</div><span class="step-label">ลงทะเบียน</span></div>
+      <div class="step-item current"><div class="step-num-badge">2</div><span class="step-label">เข้าสู่ระบบ</span></div>
+      <div class="step-item"><div class="step-num-badge">3</div><span class="step-label">สั่งจองสินค้า</span></div>
+    </div>
+  </div>
+  <div class="form-page-wrap">
+    <div class="form-shell form-shell-narrow">
+      <div class="form-head">
+        <h2>เข้าสู่ระบบ</h2>
+        <p>กรอกอีเมลของคุณเพื่อเข้าสู่ระบบสั่งจอง</p>
+      </div>
+      <div class="field"><label>อีเมลผู้ใช้งาน <span class="req">*</span></label><input type="email" id="login-email" placeholder="name@ddc.moph.go.th" /></div>
+      <button class="btn-primary" style="width:100%; padding:14px;" onclick="handleLogin()">เข้าสู่ระบบ</button>
+      <div class="form-divider">หรือ</div>
+      <button class="btn-outline" style="width:100%; display:flex; justify-content:center; gap:10px;" onclick="handleLogin()">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+        Sign in with Google
+      </button>
+    </div>
+  </div>
+</div>
+
+<div id="order" class="page">
+  <div class="step-bar-wrap" style="padding-bottom: 24px;">
+    <div class="step-bar">
+      <div class="step-item done"><div class="step-num-badge">✓</div><span class="step-label">ลงทะเบียน</span></div>
+      <div class="step-item done"><div class="step-num-badge">✓</div><span class="step-label">เข้าสู่ระบบ</span></div>
+      <div class="step-item current"><div class="step-num-badge">3</div><span class="step-label">สั่งจองสินค้า</span></div>
+    </div>
+  </div>
+
+  <div class="order-page-wrap">
+
+    <div class="order-images">
+      <div class="order-main-img-wrap">
+        <img id="main-product-img" src="./Picture/slide1.jpg" alt="ภาพสินค้าหลัก" style="width:100%;height:100%;object-fit:cover;" />
+      </div>
+      <div class="order-thumb-strip" id="ord-thumb-strip"></div>
+    </div>
+
+    <div class="order-form-col">
+      <div class="order-form-head">
+        <h2>รายละเอียดและสั่งจอง</h2>
+        <p>เพิ่มเสื้อได้หลายรายการก่อนยืนยัน</p>
+      </div>
+
+      <div class="add-panel">
+        <p class="add-panel-title">เพิ่มรายการสินค้า</p>
+        
+        <div class="ap-row2">
+          <div class="ap-field">
+            <label>ทรงเสื้อ <span class="req">*</span></label>
+            <select id="ord-gender">
+              <option value="">เลือกประเภท</option>
+              <option value="ชาย">ชาย (Male)</option>
+              <option value="หญิง">หญิง (Female)</option>
+            </select>
+          </div>
+          <div class="ap-field">
+            <label>ขนาด (ไซส์) <span class="req">*</span></label>
+            <select id="ord-size">
+              <option value="">เลือกไซส์</option>
+              <option>S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ap-row2">
+          <div class="ap-field">
+            <label>โทนสี <span class="req">*</span></label>
+            <select id="ord-color">
+              <option value="">เลือกสี</option>
+              <option value="กรมท่า">กรมท่า</option>
+              <option value="ขาว">ขาว</option>
+            </select>
+          </div>
+          <div class="ap-field">
+            <label>การปักด้านหลัง <span class="req">*</span></label>
+            <select id="ord-embroidery">
+              <option value="300" selected>ปักด้านหลัง (300 บาท)</option>
+              <option value="290">ไม่ปักด้านหลัง (290 บาท)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ap-row2">
+          <div class="ap-field">
+            <label>จำนวน (ตัว)</label>
+            <div class="qty-wrap">
+              <button class="qty-btn" onclick="changeQty(-1)">−</button>
+              <input class="qty-input" type="number" id="ord-qty" value="1" min="1" />
+              <button class="qty-btn" onclick="changeQty(1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ap-field" style="margin-top: 8px;">
+          <label>ที่อยู่สำหรับจัดส่ง <span class="req">*</span></label>
+          <textarea id="ord-address" rows="3" placeholder="ระบุบ้านเลขที่ หมู่ ซอย ถนน ตำบล/แขวง อำเภอ/เขต จังหวัด และรหัสไปรษณีย์" style="width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-family: 'Sarabun', sans-serif; resize: vertical; outline: none;"></textarea>
+        </div>
+
+        <button class="btn-add-item" onclick="addToCart()" style="margin-top: 16px; width: 100%;">
+          <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="margin-right: 6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          เพิ่มลงตะกร้า
+        </button>
+      </div>
+      
+      <div class="cart-box">
+        <div class="cart-header">
+          <span class="cart-title">ตะกร้าสินค้า</span>
+          <span class="cart-badge" id="cart-count">0 รายการ</span>
+        </div>
+        <div id="cart-body">
+          <div class="cart-empty">ยังไม่มีรายการ — กรุณาเพิ่มสินค้าด้านบน</div>
+        </div>
+      </div>
+
+      <div class="cart-summary" id="cart-summary" style="display:none;">
+        <div class="summary-row">
+          <span id="summary-items">รวม 0 รายการ</span>
+        </div>
+        <div class="summary-total">
+          <span class="total-label">ยอดรวมทั้งหมด</span>
+          <span class="total-amount" id="total-amount">0 <span>บาท</span></span>
+        </div>
+      </div>
+
+      <div class="info-box" style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+        <div>
+          <strong style="color: var(--primary-dk);">ช่องทางการชำระเงิน:</strong><br>
+          ธนาคารกรุงไทย บัญชี <strong>กรมควบคุมโรค</strong><br>
+          เลขที่บัญชี: <strong style="font-size: 16px;">123-456-7890</strong><br>
+          <span style="font-size: 13px; color: var(--text-muted);">* สามารถสแกน QR Code เพื่อชำระเงินได้ทันที</span>
+        </div>
+        <div style="cursor: pointer; text-align: center;" onclick="openQrLightbox()">
+          <img src="./Picture/QR-Code.png" alt="QR Code รับเงิน" style="width:100px;height:100px;object-fit:contain;background:#fff;padding:4px;border-radius:8px;border:1px solid var(--border-hover);transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+          <div style="font-size: 11px; color: var(--primary); margin-top: 6px; font-weight: 600;">🔍 แตะเพื่อขยาย</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>แนบสลิปโอนเงิน <span class="req">*</span></label>
+        <div class="file-input-wrap" onclick="document.getElementById('slip-file').click()">
+          <input type="file" id="slip-file" style="display:none;" accept="image/*" onchange="handleFileChange(this)" />
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          <p class="file-text" id="file-label">คลิกเพื่ออัปโหลดสลิป</p>
+        </div>
+      </div>
+
+      <div class="order-action-row">
+        <button class="btn-clear-cart" onclick="clearCart()">ล้างตะกร้า</button>
+        <button class="btn-confirm-order" onclick="handleOrder()">✓ ยืนยันการสั่งจอง</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="qr-lightbox" id="qr-lightbox" onclick="closeQrLightbox()">
+  <div class="qr-lightbox-content" onclick="event.stopPropagation()">
+    <button class="qr-close-btn" onclick="closeQrLightbox()">✕</button>
+    <h3 style="font-size: 18px; margin-bottom: 16px; color: var(--text-dark); text-align: center;">สแกนเพื่อชำระเงิน</h3>
+    <img src="./Picture/QR-Code.png" alt="QR Code ขยายใหญ่" />
+    <a href="./Picture/QR-Code.png" download="QR_Code_ชำระเงิน.jpg" class="btn-primary" style="width:100%;margin-top:20px;text-decoration:none;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      บันทึกรูปภาพ QR Code
+    </a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-left">
+    <span class="footer-logo">กรมควบคุมโรค (DDC)</span>
+    <span class="footer-sub">กระทรวงสาธารณสุข</span>
+  </div>
+  <div class="footer-right">
+    © 2569 ระบบจัดการสั่งจองเสื้อบุคลากร<br>
+    ติดต่อ: uniform@ddc.moph.go.th
+  </div>
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  /* ─────────── CART STATE ─────────── */
+  let cart = [];
+
+  /* ─────────── NAV & PAGE ─────────── */
+  function switchPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.nav-links button').forEach(b => b.classList.remove('active'));
+    const nb = document.getElementById('nav-' + id);
+    if (nb) nb.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ─────────── TOAST ─────────── */
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._to);
+    t._to = setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  /* ─────────── QTY CONTROL (Add Panel) ─────────── */
+  function changeQty(delta) {
+    const el = document.getElementById('ord-qty');
+    el.value = Math.max(1, (parseInt(el.value) || 1) + delta);
+  }
+
+  /* ─────────── ADD TO CART ─────────── */
+  function addToCart() {
+    const g = document.getElementById('ord-gender').value;
+    const s = document.getElementById('ord-size').value;
+    const c = document.getElementById('ord-color').value.trim();
+    const q = parseInt(document.getElementById('ord-qty').value) || 1;
+    
+    const embSelect = document.getElementById('ord-embroidery');
+    const price = parseInt(embSelect.value);
+    const embText = price === 300 ? 'ปักหลัง' : 'ไม่ปักหลัง';
+
+    if (!g) { showToast('⚠️ กรุณาเลือกทรงเสื้อ'); return; }
+    if (!s) { showToast('⚠️ กรุณาเลือกไซส์'); return; }
+    if (!c) { showToast('⚠️ กรุณาระบุโทนสี'); return; }
+
+    const key = g + '|' + s + '|' + c + '|' + price;
+    const exist = cart.find(i => i.key === key);
+    if (exist) {
+      exist.qty += q;
+      showToast('✓ อัปเดตจำนวนในตะกร้าแล้ว');
+    } else {
+      cart.push({ key, gender: g, size: s, color: c, embroidery: embText, price: price, qty: q, id: Date.now() });
+      showToast('✓ เพิ่มลงตะกร้าสำเร็จ');
+    }
+
+    renderCart();
+
+    // Reset add panel (คงค่าที่อยู่จัดส่งและคืนค่าเริ่มต้นให้ฟอร์มสินค้า)
+    document.getElementById('ord-gender').value = '';
+    document.getElementById('ord-size').value   = '';
+    document.getElementById('ord-color').value  = '';
+    document.getElementById('ord-qty').value    = '1';
+    document.getElementById('ord-embroidery').value = '300';
+  }
+
+  /* ─────────── REMOVE FROM CART ─────────── */
+  function removeItem(id) {
+    cart = cart.filter(i => i.id !== id);
+    renderCart();
+    showToast('ลบรายการออกแล้ว');
+  }
+
+  /* ─────────── CLEAR CART ─────────── */
+  function clearCart() {
+    cart = [];
+    renderCart();
+    showToast('ล้างตะกร้าสำเร็จ');
+  }
+
+  /* ─────────── RENDER CART ─────────── */
+  function renderCart() {
+    const body    = document.getElementById('cart-body');
+    const summary = document.getElementById('cart-summary');
+    const countEl = document.getElementById('cart-count');
+
+    const totalQty = cart.reduce((a, i) => a + i.qty, 0);
+    // คำนวณราคาแบบแยกตามตัวเลือกของสินค้าแต่ละชิ้น
+    const totalAmt = cart.reduce((a, i) => a + (i.qty * i.price), 0);
+
+    countEl.textContent = totalQty + ' รายการ';
+
+    if (cart.length === 0) {
+      body.innerHTML = '<div class="cart-empty">ยังไม่มีรายการ — กรุณาเพิ่มสินค้าด้านบน</div>';
+      summary.style.display = 'none';
+      return;
+    }
+
+    body.innerHTML = cart.map(i => `
+      <div class="cart-item">
+        <div>
+          <div class="ci-name">เสื้อ${i.gender} — ${i.color} (${i.embroidery})</div>
+          <div class="ci-detail">ไซส์ ${i.size} &nbsp;×&nbsp; ${i.qty} ตัว</div>
+        </div>
+        <div class="ci-price">${(i.qty * i.price).toLocaleString('th-TH')} บาท</div>
+        <button class="ci-del" onclick="removeItem(${i.id})" title="ลบรายการ">✕</button>
+      </div>
+    `).join('');
+
+    document.getElementById('summary-items').textContent =
+      'รวม ' + cart.length + ' รายการ / ' + totalQty + ' ตัว';
+    document.getElementById('total-amount').innerHTML =
+      totalAmt.toLocaleString('th-TH') + ' <span>บาท</span>';
+
+    summary.style.display = 'block';
+  }
+
+  /* ─────────── CONFIRM ORDER ─────────── */
+  function handleOrder() {
+    if (cart.length === 0) { showToast('⚠️ ตะกร้าว่างเปล่า กรุณาเพิ่มสินค้าก่อน'); return; }
+    const total = cart.reduce((a, i) => a + (i.qty * i.price), 0);
+    showToast('🎉 ส่งคำสั่งจองสำเร็จ — ยอดชำระ ' + total.toLocaleString('th-TH') + ' บาท');
+    setTimeout(() => { cart = []; renderCart(); }, 1800);
+  }
+
+  /* ─────────── REGISTER / LOGIN ─────────── */
+  function handleRegister() {
+    const email = document.getElementById('reg-email').value.trim();
+    if (!email) { showToast('⚠️ กรุณากรอกอีเมลให้ครบถ้วน'); return; }
+    showToast('✓ ลงทะเบียนสำเร็จเรียบร้อย');
+    setTimeout(() => switchPage('login'), 800);
+  }
+
+  function handleLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    if (!email) { showToast('⚠️ กรุณาระบุอีเมล'); return; }
+    showToast('✓ ยืนยันตัวตนสำเร็จ');
+    setTimeout(() => switchPage('order'), 800);
+  }
+
+  /* ─────────── FILE UPLOAD ─────────── */
+  function handleFileChange(input) {
+    const label = document.getElementById('file-label');
+    if (input.files && input.files[0]) {
+      label.innerHTML = '<span style="color:var(--success);font-weight:600;">✓ อัปโหลดสำเร็จ:</span> ' + input.files[0].name;
+    }
+  }
+
+  /* ─────────── QR LIGHTBOX ─────────── */
+  function openQrLightbox() {
+    const lb = document.getElementById('qr-lightbox');
+    lb.style.display = 'flex';
+    setTimeout(() => lb.classList.add('show'), 10);
+    document.body.style.overflow = 'hidden';
+  }
+  function closeQrLightbox() {
+    const lb = document.getElementById('qr-lightbox');
+    lb.classList.remove('show');
+    setTimeout(() => { lb.style.display = 'none'; document.body.style.overflow = ''; }, 300);
+  }
+
+  /* ─────────── ORDER PAGE THUMBNAILS ─────────── */
+  function buildOrderThumbs() {
+    const strip = document.getElementById('ord-thumb-strip');
+    strip.innerHTML = '';
+    const thumbImages = [
+      './Picture/blue1.jpg',
+      './Picture/white2.jpg',
+      './Picture/slide1.jpg',
+      './Picture/table_size.png'
+    ];
+    thumbImages.forEach((src, i) => {
+      const item = document.createElement('div');
+      item.className = 'order-thumb-item' + (i === 0 ? ' active' : '');
+      item.innerHTML = `<img src="${src}" alt="ภาพย่อย ${i+1}" style="width:100%;height:100%;object-fit:cover;" />`;
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.order-thumb-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+        document.getElementById('main-product-img').src = src;
+      });
+      strip.appendChild(item);
+    });
+  }
+
+  /* ─────────── HERO SLIDESHOW ─────────── */
+  let currentSlide = 0;
+  const slides = document.querySelectorAll('.hero-slide');
+  if (slides.length > 0) {
+    setInterval(() => {
+      slides[currentSlide].classList.remove('active');
+      currentSlide = (currentSlide + 1) % slides.length;
+      slides[currentSlide].classList.add('active');
+    }, 4000);
+  }
+
+  /* ─────────── INIT ─────────── */
+  document.getElementById('nav-home').classList.add('active');
+  buildOrderThumbs();
+  renderCart();
+
+</script>
+</body>
+</html>
